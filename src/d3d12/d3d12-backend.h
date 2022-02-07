@@ -973,7 +973,7 @@ namespace nvrhi::d3d12
 
         void bindGraphicsPipeline(GraphicsPipeline* pso, bool updateRootSignature) const;
         void bindMeshletPipeline(MeshletPipeline* pso, bool updateRootSignature) const;
-        void bindFramebuffer(const DepthStencilState& depthStencilState, Framebuffer* fb);
+        void bindFramebuffer(Framebuffer* fb);
         void unbindShadingRateState();
         
         std::shared_ptr<InternalCommandList> createInternalCommandList() const;
@@ -1063,6 +1063,7 @@ namespace nvrhi::d3d12
         void waitForIdle() override;
         void runGarbageCollection() override;
         bool queryFeatureSupport(Feature feature, void* pInfo = nullptr, size_t infoSize = 0) override;
+        FormatSupport queryFormatSupport(Format format) override;
         Object getNativeQueue(ObjectType objectType, CommandQueue queue) override;
         IMessageCallback* getMessageCallback() override { return m_Context.messageCallback; }
 
@@ -1093,6 +1094,7 @@ namespace nvrhi::d3d12
         bool m_MeshletsSupported = false;
         bool m_VariableRateShadingSupported = false;
 
+        D3D12_FEATURE_DATA_D3D12_OPTIONS  m_Options = {};
         D3D12_FEATURE_DATA_D3D12_OPTIONS5 m_Options5 = {};
         D3D12_FEATURE_DATA_D3D12_OPTIONS6 m_Options6 = {};
         D3D12_FEATURE_DATA_D3D12_OPTIONS7 m_Options7 = {};

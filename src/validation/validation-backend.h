@@ -236,6 +236,7 @@ namespace nvrhi::validation
         bool validateBindingSetItem(const BindingSetItem& binding, bool isDescriptorTable, std::stringstream& errorStream) const;
         bool validatePipelineBindingLayouts(const static_vector<BindingLayoutHandle, c_MaxBindingLayouts>& bindingLayouts, const std::vector<IShader*>& shaders, GraphicsAPI api) const;
         bool validateShaderType(ShaderType expected, const ShaderDesc& shaderDesc, const char* function) const;
+        bool validateRenderState(const RenderState& renderState, IFramebuffer* fb) const;
 
     public:
 
@@ -317,6 +318,7 @@ namespace nvrhi::validation
         void waitForIdle() override;
         void runGarbageCollection() override;
         bool queryFeatureSupport(Feature feature, void* pInfo = nullptr, size_t infoSize = 0) override;
+        FormatSupport queryFormatSupport(Format format) override;
         Object getNativeQueue(ObjectType objectType, CommandQueue queue) override;
         IMessageCallback* getMessageCallback() override;
     };

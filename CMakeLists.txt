@@ -30,8 +30,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(CMakeDependentOption)
 
 option(NVRHI_BUILD_SHARED "Build NVRHI as a shared library (DLL or .so)" OFF)
-option(NVHRI_INSTALL "Generate install rules for NVRHI" ON)
-cmake_dependent_option(NVHRI_INSTALL_EXPORTS "Install CMake exports" OFF "NVHRI_INSTALL" OFF)
+option(NVRHI_INSTALL "Generate install rules for NVRHI" ON)
+cmake_dependent_option(NVRHI_INSTALL_EXPORTS "Install CMake exports" OFF "NVRHI_INSTALL" OFF)
 
 option(NVRHI_WITH_SHADER_COMPILER "Build the NVRHI shader compiler executable" ON)
 option(NVRHI_WITH_VALIDATION "Build NVRHI the validation layer" ON)
@@ -42,8 +42,13 @@ cmake_dependent_option(NVRHI_WITH_NVAPI "Include NVAPI support (requires NVAPI S
 cmake_dependent_option(NVRHI_WITH_DX11 "Build the NVRHI D3D11 backend" ON "WIN32" OFF)
 cmake_dependent_option(NVRHI_WITH_DX12 "Build the NVRHI D3D12 backend" ON "WIN32" OFF)
 
+if (NVRHI_BUILD_SHARED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 if (MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /MP")
+    string(REGEX REPLACE "/W[0-4]\\s*" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(APPEND CMAKE_CXX_FLAGS " /W4 /MP")
 endif()
 
 
@@ -192,6 +197,9 @@ endif()
 
 if (NVRHI_BUILD_SHARED)
     target_compile_definitions(nvrhi PRIVATE NVRHI_SHARED_LIBRARY_BUILD=1)
+    if(NVRHI_WITH_VULKAN)
+        target_compile_definitions(nvrhi PRIVATE VULKAN_HPP_STORAGE_SHARED VULKAN_HPP_STORAGE_SHARED_EXPORT)
+    endif()
     set_property(TARGET nvrhi PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
@@ -298,7 +306,7 @@ if (NVRHI_WITH_VULKAN)
 endif()
 
 
-if (NVHRI_INSTALL)
+if (NVRHI_INSTALL)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/nvrhi
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
@@ -322,7 +330,7 @@ if (NVHRI_INSTALL)
         endif()
     endif()
 
-    if (NVHRI_INSTALL_EXPORTS)
+    if (NVRHI_INSTALL_EXPORTS)
         set(nvrhi_CONFIG_PATH "lib/cmake/nvrhi")
 
         include(CMakePackageConfigHelpers)

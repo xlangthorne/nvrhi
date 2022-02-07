@@ -102,6 +102,7 @@ namespace nvrhi::d3d12
         m_Resources.shaderResourceViewHeap.allocateResources(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, desc.shaderResourceViewHeapSize, true);
         m_Resources.samplerHeap.allocateResources(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, desc.samplerHeapSize, true);
 
+        m_Context.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &m_Options, sizeof(m_Options));
         bool hasOptions5 = SUCCEEDED(m_Context.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &m_Options5, sizeof(m_Options5)));
         bool hasOptions6 = SUCCEEDED(m_Context.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &m_Options6, sizeof(m_Options6)));
         bool hasOptions7 = SUCCEEDED(m_Context.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &m_Options7, sizeof(m_Options7)));
@@ -420,6 +421,54 @@ namespace nvrhi::d3d12
         }
     }
 
+    FormatSupport Device::queryFormatSupport(Format format)
+    {
+        const DxgiFormatMapping& formatMapping = getDxgiFormatMapping(format);
+
+        FormatSupport result = FormatSupport::None;
+
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT featureData = {};
+        featureData.Format = formatMapping.rtvFormat;
+
+        m_Context.device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &featureData, sizeof(featureData));
+
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_BUFFER)
+            result = result | FormatSupport::Buffer;
+        if (featureData.Support1 & (D3D12_FORMAT_SUPPORT1_TEXTURE1D | D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_TEXTURE3D | D3D12_FORMAT_SUPPORT1_TEXTURECUBE))
+            result = result | FormatSupport::Texture;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL)
+            result = result | FormatSupport::DepthStencil;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET)
+            result = result | FormatSupport::RenderTarget;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_BLENDABLE)
+            result = result | FormatSupport::Blendable;
+
+        if (formatMapping.srvFormat != featureData.Format)
+        {
+            featureData.Format = formatMapping.srvFormat;
+            featureData.Support1 = (D3D12_FORMAT_SUPPORT1)0;
+            featureData.Support2 = (D3D12_FORMAT_SUPPORT2)0;
+            m_Context.device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &featureData, sizeof(featureData));
+        }
+
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_IA_INDEX_BUFFER)
+            result = result | FormatSupport::IndexBuffer;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_IA_VERTEX_BUFFER)
+            result = result | FormatSupport::VertexBuffer;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_LOAD)
+            result = result | FormatSupport::ShaderLoad;
+        if (featureData.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE)
+            result = result | FormatSupport::ShaderSample;
+        if (featureData.Support2 & D3D12_FORMAT_SUPPORT2_UAV_ATOMIC_ADD)
+            result = result | FormatSupport::ShaderAtomic;
+        if (featureData.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD)
+            result = result | FormatSupport::ShaderUavLoad;
+        if (featureData.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE)
+            result = result | FormatSupport::ShaderUavStore;
+
+        return result;
+    }
+
     Object Device::getNativeQueue(ObjectType objectType, CommandQueue queue)
     {
         if (objectType != ObjectTypes::D3D12_CommandQueue)
@@ -457,12 +506,16 @@ namespace nvrhi::d3d12
     {
         D3D12_HEAP_DESC heapDesc;
         heapDesc.SizeInBytes = d.capacity;
-        heapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
         heapDesc.Alignment = D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT;
         heapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
         heapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
         heapDesc.Properties.CreationNodeMask = 1; // no mGPU support in nvrhi so far
         heapDesc.Properties.VisibleNodeMask = 1;
+
+        if (m_Options.ResourceHeapTier == D3D12_RESOURCE_HEAP_TIER_1)
+            heapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES;
+        else
+            heapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
 
         switch (d.type)
         {

@@ -988,7 +988,7 @@ namespace nvrhi::validation
                 return false;
             }
         }
-        else if (renderState.depthStencilState.depthTestEnable ||renderState.depthStencilState.stencilEnable)
+        else if (renderState.depthStencilState.depthTestEnable || renderState.depthStencilState.stencilEnable)
         {
             if (!fbDesc.depthAttachment.isReadOnly)
             {

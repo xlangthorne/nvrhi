@@ -503,7 +503,11 @@ namespace nvrhi::d3d12
         D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
 
         viewDesc.Format = getDxgiFormatMapping(format == Format::UNKNOWN ? desc.format : format).srvFormat;
-        TranslateComponentMapping(desc.componentMapping, viewDesc.Shader4ComponentMapping);
+        viewDesc.Shader4ComponentMapping =
+            D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(desc.componentMapping.bits.r,
+                                                    desc.componentMapping.bits.g,
+                                                    desc.componentMapping.bits.b,
+                                                    desc.componentMapping.bits.a);
 
         uint32_t planeSlice = (viewDesc.Format == DXGI_FORMAT_X24_TYPELESS_G8_UINT) ? 1 : 0;
 

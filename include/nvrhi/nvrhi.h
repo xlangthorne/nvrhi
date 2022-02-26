@@ -372,6 +372,19 @@ namespace nvrhi
     typedef uint32_t MipLevel;
     typedef uint32_t ArraySlice;
 
+    union ComponentMapping
+    {
+        struct {
+            uint32_t r : 3;
+            uint32_t g : 3;
+            uint32_t b : 3;
+            uint32_t a : 3;
+        } bits;
+        uint32_t value;
+    };
+
+    constexpr ComponentMapping DefaultComponentMapping = { 0, 1, 2, 3 };
+
     struct TextureDesc
     {
         uint32_t width = 1;
@@ -383,6 +396,7 @@ namespace nvrhi
         uint32_t sampleQuality = 0;
         Format format = Format::UNKNOWN;
         TextureDimension dimension = TextureDimension::Texture2D;
+        ComponentMapping componentMapping = DefaultComponentMapping;
         std::string debugName;
 
         bool isRenderTarget = false;
@@ -414,6 +428,7 @@ namespace nvrhi
         constexpr TextureDesc& setSampleQuality(uint32_t value) { sampleQuality = value; return *this; }
         constexpr TextureDesc& setFormat(Format value) { format = value; return *this; }
         constexpr TextureDesc& setDimension(TextureDimension value) { dimension = value; return *this; }
+        constexpr TextureDesc& setComponetMapping(ComponentMapping value) { componentMapping = value; return *this; }
                   TextureDesc& setDebugName(const std::string& value) { debugName = value; return *this; }
         constexpr TextureDesc& setIsRenderTarget(bool value) { isRenderTarget = value; return *this; }
         constexpr TextureDesc& setIsUAV(bool value) { isUAV = value; return *this; }

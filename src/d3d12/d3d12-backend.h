@@ -80,6 +80,7 @@ namespace nvrhi::d3d12
     void TranslateBlendState(const BlendState& inState, D3D12_BLEND_DESC& outState);
     void TranslateDepthStencilState(const DepthStencilState& inState, D3D12_DEPTH_STENCIL_DESC& outState);
     void TranslateRasterizerState(const RasterState& inState, D3D12_RASTERIZER_DESC& outState);
+    void TranslateComponentMapping(const ComponentMapping& inMapping, UINT& outMapping);
     
     struct Context
     {

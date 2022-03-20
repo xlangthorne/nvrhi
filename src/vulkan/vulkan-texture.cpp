@@ -250,6 +250,27 @@ namespace nvrhi::vulkan
                                 .setFlags(flags);
     }
 
+    inline vk::ComponentSwizzle convertComponentMapping( ComponentSwizzle nvSwizzle )
+    {
+        switch( nvSwizzle )
+        {
+        case ComponentSwizzle::Red:
+            return vk::ComponentSwizzle::eR;
+        case ComponentSwizzle::Green:
+            return vk::ComponentSwizzle::eG;
+        case ComponentSwizzle::Blue:
+            return vk::ComponentSwizzle::eB;
+        case ComponentSwizzle::Alpha:
+            return vk::ComponentSwizzle::eA;
+        case ComponentSwizzle::Zero:
+            return vk::ComponentSwizzle::eZero;
+        case ComponentSwizzle::One:
+            return vk::ComponentSwizzle::eOne;
+        default:
+            return vk::ComponentSwizzle::eIdentity;
+        }
+    }
+
     TextureSubresourceView& Texture::getSubresourceView(const TextureSubresourceSet& subresource, TextureDimension dimension, TextureSubresourceViewType viewtype)
     {
         // This function is called from createBindingSet etc. and therefore free-threaded.
@@ -294,6 +315,13 @@ namespace nvrhi::vulkan
             // D3D / HLSL puts stencil values in the second component to keep the illusion of combined depth/stencil.
             // Set a component swizzle so we appear to do the same.
             viewInfo.components.setG(vk::ComponentSwizzle::eR);
+        }
+        else
+        {
+            viewInfo.components.setR( convertComponentMapping( desc.componentMapping.r ) );
+            viewInfo.components.setG( convertComponentMapping( desc.componentMapping.g ) );
+            viewInfo.components.setB( convertComponentMapping( desc.componentMapping.b ) );
+            viewInfo.components.setA( convertComponentMapping( desc.componentMapping.a ) );
         }
 
         const vk::Result res = m_Context.device.createImageView(&viewInfo, m_Context.allocationCallbacks, &view.view);

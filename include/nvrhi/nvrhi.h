@@ -393,6 +393,24 @@ namespace nvrhi
         // D3D11, Vulkan: ignored
         Shared_CrossAdapter = 0x04,
     };
+    
+    enum class ComponentSwizzle
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        Zero,
+        One
+    };
+
+    struct ComponentMapping
+    {
+        ComponentSwizzle r = ComponentSwizzle::Red;
+        ComponentSwizzle g = ComponentSwizzle::Green;
+        ComponentSwizzle b = ComponentSwizzle::Blue;
+        ComponentSwizzle a = ComponentSwizzle::Alpha;
+    };
 
     NVRHI_ENUM_CLASS_FLAG_OPERATORS(SharedResourceFlags)
 
@@ -407,6 +425,7 @@ namespace nvrhi
         uint32_t sampleQuality = 0;
         Format format = Format::UNKNOWN;
         TextureDimension dimension = TextureDimension::Texture2D;
+        ComponentMapping componentMapping;
         std::string debugName;
 
         bool isRenderTarget = false;
@@ -440,6 +459,7 @@ namespace nvrhi
         constexpr TextureDesc& setSampleQuality(uint32_t value) { sampleQuality = value; return *this; }
         constexpr TextureDesc& setFormat(Format value) { format = value; return *this; }
         constexpr TextureDesc& setDimension(TextureDimension value) { dimension = value; return *this; }
+        constexpr TextureDesc& setComponetMapping(ComponentMapping value) { componentMapping = value; return *this; }
                   TextureDesc& setDebugName(const std::string& value) { debugName = value; return *this; }
         constexpr TextureDesc& setIsRenderTarget(bool value) { isRenderTarget = value; return *this; }
         constexpr TextureDesc& setIsUAV(bool value) { isUAV = value; return *this; }

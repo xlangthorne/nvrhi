@@ -503,7 +503,7 @@ namespace nvrhi::d3d12
         D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
 
         viewDesc.Format = getDxgiFormatMapping(format == Format::UNKNOWN ? desc.format : format).srvFormat;
-        viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        TranslateComponentMapping(desc.componentMapping, viewDesc.Shader4ComponentMapping);
 
         uint32_t planeSlice = (viewDesc.Format == DXGI_FORMAT_X24_TYPELESS_G8_UINT) ? 1 : 0;
 
@@ -1213,6 +1213,12 @@ namespace nvrhi::d3d12
     uint32_t calcSubresource(uint32_t MipSlice, uint32_t ArraySlice, uint32_t PlaneSlice, uint32_t MipLevels, uint32_t ArraySize)
     {
         return MipSlice + (ArraySlice * MipLevels) + (PlaneSlice * MipLevels * ArraySize);
+    }
+
+    void TranslateComponentMapping( const ComponentMapping& inMapping, UINT& outMapping )
+    {
+        // Mapping component values are one-to-one.
+        outMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING( (int)inMapping.r, (int)inMapping.g, (int)inMapping.b, (int)inMapping.a );
     }
 
 } // namespace nvrhi::d3d12

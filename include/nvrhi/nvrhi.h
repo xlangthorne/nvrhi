@@ -392,6 +392,24 @@ namespace nvrhi
     };
 
     NVRHI_ENUM_CLASS_FLAG_OPERATORS(SharedResourceFlags)
+    
+    enum class ComponentSwizzle
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        Zero,
+        One
+    };
+
+    struct ComponentMapping
+    {
+        ComponentSwizzle r = ComponentSwizzle::Red;
+        ComponentSwizzle g = ComponentSwizzle::Green;
+        ComponentSwizzle b = ComponentSwizzle::Blue;
+        ComponentSwizzle a = ComponentSwizzle::Alpha;
+    };
 
     struct TextureDesc
     {
@@ -404,6 +422,7 @@ namespace nvrhi
         uint32_t sampleQuality = 0;
         Format format = Format::UNKNOWN;
         TextureDimension dimension = TextureDimension::Texture2D;
+        ComponentMapping componentMapping;
         std::string debugName;
 
         bool isRenderTarget = false;
@@ -437,6 +456,7 @@ namespace nvrhi
         constexpr TextureDesc& setSampleQuality(uint32_t value) { sampleQuality = value; return *this; }
         constexpr TextureDesc& setFormat(Format value) { format = value; return *this; }
         constexpr TextureDesc& setDimension(TextureDimension value) { dimension = value; return *this; }
+        constexpr TextureDesc& setComponetMapping(ComponentMapping value) { componentMapping = value; return *this; }
                   TextureDesc& setDebugName(const std::string& value) { debugName = value; return *this; }
         constexpr TextureDesc& setIsRenderTarget(bool value) { isRenderTarget = value; return *this; }
         constexpr TextureDesc& setIsUAV(bool value) { isUAV = value; return *this; }
@@ -1128,6 +1148,31 @@ namespace nvrhi
         SamplerAddressMode addressV = SamplerAddressMode::Clamp;
         SamplerAddressMode addressW = SamplerAddressMode::Clamp;
         SamplerReductionType reductionType = SamplerReductionType::Standard;
+
+        bool operator ==( const SamplerDesc& s ) const
+        {
+            if( borderColor != s.borderColor )
+                return false;
+            if( maxAnisotropy != s.maxAnisotropy )
+                return false;
+            if( mipBias != s.mipBias )
+                return false;
+            if( minFilter != s.minFilter )
+                return false;
+            if( magFilter != s.magFilter )
+                return false;
+            if( mipFilter != s.mipFilter )
+                return false;
+            if( addressU != s.addressU )
+                return false;
+            if( addressV != s.addressV )
+                return false;
+            if( addressW != s.addressW )
+                return false;
+            if( reductionType != s.reductionType )
+                return false;
+            return true;
+        }
 
         SamplerDesc& setBorderColor(const Color& color) { borderColor = color; return *this; }
         SamplerDesc& setMaxAnisotropy(float value) { maxAnisotropy = value; return *this; }
@@ -2628,6 +2673,38 @@ namespace std
             for (const auto& item : s.bindings)
                 hash_combine(value, item);
             return value;
+        }
+    };
+
+    template<> struct hash<nvrhi::Color>
+    {
+        std::size_t operator()( nvrhi::Color const& s ) const noexcept
+        {
+            std::size_t hash = 0;
+            nvrhi::hash_combine( hash, s.r );
+            nvrhi::hash_combine( hash, s.g );
+            nvrhi::hash_combine( hash, s.b );
+            nvrhi::hash_combine( hash, s.a );
+            return hash;
+        }
+    };
+
+    template<> struct std::hash<nvrhi::SamplerDesc>
+    {
+        std::size_t operator()(nvrhi::SamplerDesc const& s) const noexcept
+        {
+            std::size_t hash = 0;
+            nvrhi::hash_combine( hash, s.borderColor );
+            nvrhi::hash_combine( hash, s.maxAnisotropy );
+            nvrhi::hash_combine( hash, s.mipBias );
+            nvrhi::hash_combine( hash, s.minFilter );
+            nvrhi::hash_combine( hash, s.magFilter );
+            nvrhi::hash_combine( hash, s.mipFilter );
+            nvrhi::hash_combine( hash, s.addressU );
+            nvrhi::hash_combine( hash, s.addressV );
+            nvrhi::hash_combine( hash, s.addressW );
+            nvrhi::hash_combine( hash, s.reductionType );
+            return hash;
         }
     };
 

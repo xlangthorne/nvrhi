@@ -390,9 +390,9 @@ namespace nvrhi::validation
         return m_Device->createBuffer(patchedDesc);
     }
 
-    void * DeviceWrapper::mapBuffer(IBuffer* b, CpuAccessMode mapFlags)
+    void *DeviceWrapper::mapBuffer(IBuffer* b, CpuAccessMode mapFlags, BufferRange range)
     {
-        return m_Device->mapBuffer(b, mapFlags);
+        return m_Device->mapBuffer(b, mapFlags, range);
     }
 
     void DeviceWrapper::unmapBuffer(IBuffer* b)

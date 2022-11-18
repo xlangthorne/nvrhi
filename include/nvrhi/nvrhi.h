@@ -1722,7 +1722,7 @@ namespace nvrhi
             return result;
         }
 
-        static BindingSetItem ConstantBuffer(uint32_t slot, IBuffer* buffer)
+        static BindingSetItem ConstantBuffer(uint32_t slot, IBuffer* buffer, BufferRange range = EntireBuffer)
         {
             bool isVolatile = buffer && buffer->getDesc().isVolatile;
 
@@ -1732,7 +1732,7 @@ namespace nvrhi
             result.resourceHandle = buffer;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
-            result.range = EntireBuffer;
+            result.range = range;
             result.unused = 0;
             return result;
         }
@@ -2522,7 +2522,7 @@ namespace nvrhi
         virtual void unmapStagingTexture(IStagingTexture* tex) = 0;
 
         virtual BufferHandle createBuffer(const BufferDesc& d) = 0;
-        virtual void *mapBuffer(IBuffer* buffer, CpuAccessMode cpuAccess) = 0;
+        virtual void *mapBuffer(IBuffer* buffer, CpuAccessMode cpuAccess, BufferRange range = EntireBuffer) = 0;
         virtual void unmapBuffer(IBuffer* buffer) = 0;
         virtual MemoryRequirements getBufferMemoryRequirements(IBuffer* buffer) = 0;
         virtual bool bindBufferMemory(IBuffer* buffer, IHeap* heap, uint64_t offset) = 0;

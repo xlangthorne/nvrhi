@@ -259,7 +259,7 @@ namespace nvrhi::validation
         void unmapStagingTexture(IStagingTexture* tex) override;
 
         BufferHandle createBuffer(const BufferDesc& d) override;
-        void *mapBuffer(IBuffer* b, CpuAccessMode mapFlags) override;
+        void *mapBuffer(IBuffer* b, CpuAccessMode mapFlags, BufferRange range = EntireBuffer) override;
         void unmapBuffer(IBuffer* b) override;
         MemoryRequirements getBufferMemoryRequirements(IBuffer* buffer) override;
         bool bindBufferMemory(IBuffer* buffer, IHeap* heap, uint64_t offset) override;

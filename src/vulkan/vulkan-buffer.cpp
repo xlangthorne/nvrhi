@@ -544,11 +544,13 @@ namespace nvrhi::vulkan
         return ptr;
     }
 
-    void *Device::mapBuffer(IBuffer* _buffer, CpuAccessMode flags)
+    void *Device::mapBuffer(IBuffer* _buffer, CpuAccessMode flags, BufferRange range)
     {
         Buffer* buffer = checked_cast<Buffer*>(_buffer);
 
-        return mapBuffer(buffer, flags, 0, buffer->desc.byteSize);
+        range = range.resolve(buffer->desc);
+
+        return mapBuffer(buffer, flags, range.byteOffset, range.byteSize);
     }
 
     void Device::unmapBuffer(IBuffer* _buffer)

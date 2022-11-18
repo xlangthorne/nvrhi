@@ -163,7 +163,7 @@ namespace nvrhi::d3d12
         return m_ClearUAV;
     }
 
-    void *Device::mapBuffer(IBuffer* _b, CpuAccessMode flags)
+    void* Device::mapBuffer(IBuffer* _b, CpuAccessMode flags, BufferRange bufferRange)
     {
         Buffer* b = checked_cast<Buffer*>(_b);
 
@@ -173,12 +173,15 @@ namespace nvrhi::d3d12
             b->lastUseFence = nullptr;
         }
 
+        bufferRange = bufferRange.resolve(b->desc);
+
         D3D12_RANGE range;
 
         if (flags == CpuAccessMode::Read)
         {
-            range = { 0, b->desc.byteSize };
-        } else {
+            range = { bufferRange.byteOffset, bufferRange.byteSize };
+        }
+        else {
             range = { 0, 0 };
         }
 
@@ -191,10 +194,9 @@ namespace nvrhi::d3d12
             ss << "Map call failed for buffer " << utils::DebugNameToString(b->desc.debugName)
                << ", HRESULT = 0x" << std::hex << std::setw(8) << res;
             m_Context.error(ss.str());
-            
+
             return nullptr;
         }
-        
         return mappedBuffer;
     }
 

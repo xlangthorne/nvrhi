@@ -2663,7 +2663,7 @@ namespace nvrhi
         virtual void unmapStagingTexture(IStagingTexture* tex) = 0;
 
         virtual BufferHandle createBuffer(const BufferDesc& d) = 0;
-        virtual void *mapBuffer(IBuffer* buffer, CpuAccessMode cpuAccess) = 0;
+        virtual void *mapBuffer(IBuffer* buffer, CpuAccessMode cpuAccess, BufferRange range = EntireBuffer) = 0;
         virtual void unmapBuffer(IBuffer* buffer) = 0;
         virtual MemoryRequirements getBufferMemoryRequirements(IBuffer* buffer) = 0;
         virtual bool bindBufferMemory(IBuffer* buffer, IHeap* heap, uint64_t offset) = 0;

@@ -2831,7 +2831,7 @@ namespace std
         }
     };
 
-    template<> struct std::hash<nvrhi::SamplerDesc>
+    template<> struct hash<nvrhi::SamplerDesc>
     {
         std::size_t operator()(nvrhi::SamplerDesc const& s) const noexcept
         {

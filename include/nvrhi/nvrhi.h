@@ -2732,14 +2732,16 @@ namespace std
         }
     };
 
-    template<> struct hash<nvrhi::FramebufferInfo>
+    template<> struct hash<nvrhi::FramebufferInfoEx>
     {
-        std::size_t operator()(nvrhi::FramebufferInfo const& s) const noexcept
+        std::size_t operator()(nvrhi::FramebufferInfoEx const& s) const noexcept
         {
             size_t hash = 0;
             for (auto format : s.colorFormats)
                 nvrhi::hash_combine(hash, format);
             nvrhi::hash_combine(hash, s.depthFormat);
+            nvrhi::hash_combine(hash, s.width);
+            nvrhi::hash_combine(hash, s.height);
             nvrhi::hash_combine(hash, s.sampleCount);
             nvrhi::hash_combine(hash, s.sampleQuality);
             return hash;

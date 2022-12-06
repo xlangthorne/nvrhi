@@ -62,7 +62,7 @@ namespace nvrhi
 {
     // Version of the public API provided by NVRHI.
     // Increment this when any changes to the API are made.
-    static constexpr uint32_t c_HeaderVersion = 4;
+    static constexpr uint32_t c_HeaderVersion = 6;
 
     // Verifies that the version of the implementation matches the version of the header.
     // Returns true if they match. Use this when initializing apps using NVRHI as a shared library.
@@ -1235,33 +1235,27 @@ namespace nvrhi
         FramebufferDesc& setShadingRateAttachment(ITexture* texture, TextureSubresourceSet subresources) { shadingRateAttachment = FramebufferAttachment().setTexture(texture).setSubresources(subresources); return *this; }
     };
 
+    // Describes the parameters of a framebuffer that can be used to determine if a given framebuffer
+    // is compatible with a certain graphics or meshlet pipeline object. All fields of FramebufferInfo
+    // must match between the framebuffer and the pipeline for them to be compatible.
     struct FramebufferInfo
     {
         static_vector<Format, c_MaxRenderTargets> colorFormats;
         Format depthFormat = Format::UNKNOWN;
-        uint32_t width = 0;
-        uint32_t height = 0;
         uint32_t sampleCount = 1;
         uint32_t sampleQuality = 0;
 
         FramebufferInfo() = default;
         NVRHI_API FramebufferInfo(const FramebufferDesc& desc);
-
+        
         bool operator==(const FramebufferInfo& other) const
         {
             return formatsEqual(colorFormats, other.colorFormats)
                 && depthFormat == other.depthFormat
-                && width == other.width
-                && height == other.height
                 && sampleCount == other.sampleCount
                 && sampleQuality == other.sampleQuality;
         }
         bool operator!=(const FramebufferInfo& other) const { return !(*this == other); }
-
-        [[nodiscard]] Viewport getViewport(float minZ = 0.f, float maxZ = 1.f) const
-        {
-            return Viewport(0.f, float(width), 0.f, float(height), minZ, maxZ);
-        }
 
     private:
         static bool formatsEqual(const static_vector<Format, c_MaxRenderTargets>& a, const static_vector<Format, c_MaxRenderTargets>& b)
@@ -1272,11 +1266,28 @@ namespace nvrhi
         }
     };
 
+    // An extended version of FramebufferInfo that also contains the 'width' and 'height' members.
+    // It is provided mostly for backward compatibility and convenience reasons, as previously these members
+    // were available in the regular FramebufferInfo structure.
+    struct FramebufferInfoEx : FramebufferInfo
+    {
+        uint32_t width = 0;
+        uint32_t height = 0;
+
+        FramebufferInfoEx() = default;
+        NVRHI_API FramebufferInfoEx(const FramebufferDesc& desc);
+
+        [[nodiscard]] Viewport getViewport(float minZ = 0.f, float maxZ = 1.f) const
+        {
+            return Viewport(0.f, float(width), 0.f, float(height), minZ, maxZ);
+        }
+    };
+
     class IFramebuffer : public IResource 
     {
     public:
         [[nodiscard]] virtual const FramebufferDesc& getDesc() const = 0;
-        [[nodiscard]] virtual const FramebufferInfo& getFramebufferInfo() const = 0;
+        [[nodiscard]] virtual const FramebufferInfoEx& getFramebufferInfo() const = 0;
     };
 
     typedef RefCountPtr<IFramebuffer> FramebufferHandle;
@@ -2173,6 +2184,19 @@ namespace nvrhi
         constexpr DrawArguments& setStartInstanceLocation(uint32_t value) { startInstanceLocation = value; return *this; }
     };
 
+    struct DrawIndirectArguments
+    {
+        uint32_t vertexCount = 0;
+        uint32_t instanceCount = 1;
+        uint32_t startVertexLocation = 0;
+        uint32_t startInstanceLocation = 0;
+
+        constexpr DrawIndirectArguments& setVertexCount(uint32_t value) { vertexCount = value; return *this; }
+        constexpr DrawIndirectArguments& setInstanceCount(uint32_t value) { instanceCount = value; return *this; }
+        constexpr DrawIndirectArguments& setStartVertexLocation(uint32_t value) { startVertexLocation = value; return *this; }
+        constexpr DrawIndirectArguments& setStartInstanceLocation(uint32_t value) { startInstanceLocation = value; return *this; }
+    };
+
     struct ComputeState
     {
         IComputePipeline* pipeline = nullptr;
@@ -2427,7 +2451,7 @@ namespace nvrhi
         virtual void setGraphicsState(const GraphicsState& state) = 0;
         virtual void draw(const DrawArguments& args) = 0;
         virtual void drawIndexed(const DrawArguments& args) = 0;
-        virtual void drawIndirect(uint32_t offsetBytes) = 0;
+        virtual void drawIndirect(uint32_t offsetBytes, uint32_t drawCount = 1) = 0;
         
         virtual void setComputeState(const ComputeState& state) = 0;
         virtual void dispatch(uint32_t groupsX, uint32_t groupsY = 1, uint32_t groupsZ = 1) = 0;
@@ -2716,8 +2740,6 @@ namespace std
             for (auto format : s.colorFormats)
                 nvrhi::hash_combine(hash, format);
             nvrhi::hash_combine(hash, s.depthFormat);
-            nvrhi::hash_combine(hash, s.width);
-            nvrhi::hash_combine(hash, s.height);
             nvrhi::hash_combine(hash, s.sampleCount);
             nvrhi::hash_combine(hash, s.sampleQuality);
             return hash;

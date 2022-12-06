@@ -176,12 +176,12 @@ namespace nvrhi::d3d11
     {
     public:
         FramebufferDesc desc;
-        FramebufferInfo framebufferInfo;
+        FramebufferInfoEx framebufferInfo;
         static_vector<RefCountPtr<ID3D11RenderTargetView>, c_MaxRenderTargets> RTVs;
         RefCountPtr<ID3D11DepthStencilView> DSV;
         
         const FramebufferDesc& getDesc() const override { return desc; }
-        const FramebufferInfo& getFramebufferInfo() const override { return framebufferInfo; }
+        const FramebufferInfoEx& getFramebufferInfo() const override { return framebufferInfo; }
     };
 
     struct DX11_ViewportState
@@ -303,7 +303,7 @@ namespace nvrhi::d3d11
         void setGraphicsState(const GraphicsState& state) override;
         void draw(const DrawArguments& args) override;
         void drawIndexed(const DrawArguments& args) override;
-        void drawIndirect(uint32_t offsetBytes) override;
+        void drawIndirect(uint32_t offsetBytes, uint32_t drawCount) override;
 
         void setComputeState(const ComputeState& state) override;
         void dispatch(uint32_t groupsX, uint32_t groupsY = 1, uint32_t groupsZ = 1) override;

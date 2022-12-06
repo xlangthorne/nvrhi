@@ -61,7 +61,7 @@ namespace nvrhi::vulkan
     {
         Framebuffer *fb = new Framebuffer(m_Context);
         fb->desc = desc;
-        fb->framebufferInfo = FramebufferInfo(desc);
+        fb->framebufferInfo = FramebufferInfoEx(desc);
 
         attachment_vector<vk::AttachmentDescription2> attachmentDescs(desc.colorAttachments.size());
         attachment_vector<vk::AttachmentReference2> colorAttachmentRefs(desc.colorAttachments.size());
@@ -240,7 +240,7 @@ namespace nvrhi::vulkan
     {
         Framebuffer* fb = new Framebuffer(m_Context);
         fb->desc = desc;
-        fb->framebufferInfo = FramebufferInfo(desc);
+        fb->framebufferInfo = FramebufferInfoEx(desc);
         fb->renderPass = renderPass;
         fb->framebuffer = framebuffer;
         fb->managed = transferOwnership;
@@ -807,7 +807,7 @@ namespace nvrhi::vulkan
             args.startInstanceLocation);
     }
 
-    void CommandList::drawIndirect(uint32_t offsetBytes)
+    void CommandList::drawIndirect(uint32_t offsetBytes, uint32_t drawCount)
     {
         assert(m_CurrentCmdBuf);
 
@@ -816,8 +816,7 @@ namespace nvrhi::vulkan
         Buffer* indirectParams = checked_cast<Buffer*>(m_CurrentGraphicsState.indirectParams);
         assert(indirectParams);
 
-        // TODO: is this right?
-        m_CurrentCmdBuf->cmdBuf.drawIndirect(indirectParams->buffer, offsetBytes, 1, 0);
+        m_CurrentCmdBuf->cmdBuf.drawIndirect(indirectParams->buffer, offsetBytes, drawCount, sizeof(DrawIndirectArguments));
     }
 
 } // namespace nvrhi::vulkan

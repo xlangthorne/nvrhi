@@ -613,7 +613,7 @@ namespace nvrhi::validation
         if (state.framebuffer->getFramebufferInfo() != state.pipeline->getFramebufferInfo())
         {
             ss << "The framebuffer used in the draw call does not match the framebuffer used to create the pipeline." << std::endl <<
-                "Width, height, and formats of the framebuffers must match." << std::endl;
+                "Formats and sample counts of the framebuffers must match." << std::endl;
             anyErrors = true;
         }
 
@@ -683,7 +683,7 @@ namespace nvrhi::validation
         m_CommandList->drawIndexed(args);
     }
 
-    void CommandListWrapper::drawIndirect(uint32_t offsetBytes)
+    void CommandListWrapper::drawIndirect(uint32_t offsetBytes, uint32_t drawCount)
     {
         if (!requireOpenState())
             return;
@@ -698,10 +698,16 @@ namespace nvrhi::validation
             return;
         }
 
+        if (!m_CurrentGraphicsState.indirectParams)
+        {
+            error("Indirect params buffer is not set before a drawIndirect call.");
+            return;
+        }
+
         if (!validatePushConstants("graphics", "setGraphicsState"))
             return;
 
-        m_CommandList->drawIndirect(offsetBytes);
+        m_CommandList->drawIndirect(offsetBytes, drawCount);
     }
 
     void CommandListWrapper::setComputeState(const ComputeState& state)

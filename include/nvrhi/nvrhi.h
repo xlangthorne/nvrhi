@@ -393,6 +393,8 @@ namespace nvrhi
         // D3D11, Vulkan: ignored
         Shared_CrossAdapter = 0x04,
     };
+
+    NVRHI_ENUM_CLASS_FLAG_OPERATORS(SharedResourceFlags)
     
     enum class ComponentSwizzle
     {
@@ -411,8 +413,6 @@ namespace nvrhi
         ComponentSwizzle b = ComponentSwizzle::Blue;
         ComponentSwizzle a = ComponentSwizzle::Alpha;
     };
-
-    NVRHI_ENUM_CLASS_FLAG_OPERATORS(SharedResourceFlags)
 
     struct TextureDesc
     {

@@ -22,6 +22,7 @@
 
 #include "vulkan-backend.h"
 #include <unordered_map>
+#include <sstream>  // XML: this needs to be explicitly #include'd
 
 #include <nvrhi/common/misc.h>
 
